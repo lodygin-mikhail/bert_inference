@@ -5,8 +5,15 @@ from logger import get_logger
 logger = get_logger(__name__)
 
 class FileClient:
-
-    def read_file(self, file_path):
+    """
+    Клиент для работы с файловой системой.
+    """
+    def read_file(self, file_path: str) -> pd.DataFrame:
+        """
+        Метод преобразует CSV файл в pandas.DataFrame
+        :param file_path: Путь к исходному файлу CSV с данными
+        :return: pandas.DataFrame
+        """
         try:
             logger.info("Загрузка данных из %s", file_path)
             data = pd.read_csv(file_path)
@@ -19,7 +26,13 @@ class FileClient:
             logger.error("Ошибка загрузки данных: %s", e, exc_info=True)
             raise
 
-    def write_file(self, data, file_path):
+    def write_file(self, data: pd.DataFrame, file_path: str):
+        """
+        Метод записывает pandas.DataFrame в CSV файл по указанному пути
+        :param data: Данные pandas.DataFrame
+        :param file_path: Путь для записи CSV файла
+        :return:
+        """
         try:
             logger.info("Выгрузка данных в %s", file_path)
             data.to_csv(file_path, index=False)

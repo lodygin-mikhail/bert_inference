@@ -7,8 +7,15 @@ from logger import get_logger
 logger = get_logger(__name__)
 
 class BertModel:
-
-    def __init__(self, model_name="cointegrated/rubert-tiny-sentiment-balanced"):
+    """
+    Модель для анализа тональности текста с использованием BERT.
+    """
+    def __init__(self, model_name:str="cointegrated/rubert-tiny-sentiment-balanced"):
+        """
+        Инициализирует модель и токенизатор.
+        :param model_name: Название модели из HuggingFace Hub.
+            По умолчанию 'cointegrated/rubert-tiny-sentiment-balanced'.
+        """
         logger.info("Инициализация модели: %s", model_name)
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -26,6 +33,11 @@ class BertModel:
         logger.debug("Модель загружена в память")
 
     def predict(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Предсказывает тональность для списка текстов.
+        :param data: pd.DataFrame
+        :return: pd.DataFrame с полученными скорами тональности от -1 до 1
+        """
         logger.info("Начало инференса модели")
         with torch.no_grad():
             texts = data['review'].tolist()

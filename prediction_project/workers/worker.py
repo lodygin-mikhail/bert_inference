@@ -7,7 +7,13 @@ logger = get_logger(__name__)
 
 
 class Worker:
+    """
+    Координатор ETL пайплайна для анализа тональности.
+    """
     def __init__(self):
+        """
+        Инициализирует экземпляры классов Client, Processor, BertModel.
+        """
         logger.info("Инициализация воркера: %s")
         try:
             self.client = FileClient()
@@ -17,7 +23,13 @@ class Worker:
             logger.error("Ошибка инициализации воркера: %s", e, exc_info=True)
             raise
 
-    def run(self, input_path, output_path):
+    def run(self, input_path:str, output_path:str):
+        """
+        Метод запускает полный пайплайн обработки отзывов.
+        :param input_path: Путь до исходного файла CSV с данными.
+        :param output_path: Путь сохранения данных в файле CSV.
+        :return:
+        """
         logger.info("Начало работы воркера")
         try:
             data = self.client.read_file(input_path)
