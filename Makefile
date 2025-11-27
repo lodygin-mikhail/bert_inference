@@ -3,82 +3,53 @@
 #################################################################################
 
 PROJECT_NAME = bert_inference
-PYTHON_VERSION = 3.10
+PYTHON_VERSION = 3.11
 PYTHON_INTERPRETER = python
+DOCKER_COMPOSE=docker compose
 
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
 
-
-## Install Python dependencies
-.PHONY: requirements
-requirements:
-	uv sync
-	
-
-
-
-## Delete all compiled Python files
-.PHONY: clean
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
-
-
-## Lint using flake8, black, and isort (use `make format` to do formatting)
-.PHONY: lint
-lint:
-	flake8 etl_project
-	isort --check --diff etl_project
-	black --check etl_project
-
-## Format source code with black
-.PHONY: format
-format:
-	isort etl_project
-	black etl_project
-
-
-
-
-
-## Set up Python interpreter environment
-.PHONY: create_environment
-create_environment:
-	uv venv --python $(PYTHON_VERSION)
-	@echo ">>> New uv virtual environment created. Activate with:"
-	@echo ">>> Windows: .\\\\.venv\\\\Scripts\\\\activate"
-	@echo ">>> Unix/macOS: source ./.venv/bin/activate"
-	
-
-
-
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
-
-
-## Make dataset
-.PHONY: data
-data: requirements
-	$(PYTHON_INTERPRETER) etl_project/dataset.py
-
-
-#################################################################################
-# Self Documenting Commands                                                     #
-#################################################################################
-
-.DEFAULT_GOAL := help
-
-define PRINT_HELP_PYSCRIPT
-import re, sys; \
-lines = '\n'.join([line for line in sys.stdin]); \
-matches = re.findall(r'\n## (.*)\n[\s\S]+?\n([a-zA-Z_-]+):', lines); \
-print('Available rules:\n'); \
-print('\n'.join(['{:25}{}'.format(*reversed(match)) for match in matches]))
-endef
-export PRINT_HELP_PYSCRIPT
+.PHONY: help start stop restart build logs deps
 
 help:
-	@$(PYTHON_INTERPRETER) -c "${PRINT_HELP_PYSCRIPT}" < $(MAKEFILE_LIST)
+	@echo "Доступные команды:"
+	@echo "  make start     - Запуск всех сервисов"
+	@echo "  make stop      - Остановка всех сервисов"
+	@echo "  make restart   - Перезапуск сервисов"
+	@echo "  make build     - Пересборка образов"
+	@echo "  make logs      - Просмотр логов"
+	@echo "  make deps      - Обновление requirements.txt"
+
+# Запуск сервисов
+start:
+	$(DOCKER_COMPOSE) up -d
+	@echo "✅ Сервисы запущены"
+
+# Остановка сервисов
+stop:
+	$(DOCKER_COMPOSE) down
+	@echo "✅ Сервисы остановлены"
+
+# Перезапуск
+restart: stop start
+	@echo "✅ Сервисы перезапущены"
+
+# Пересборка образов
+build:
+	$(DOCKER_COMPOSE) build --no-cache
+	@echo "✅ Образы пересобраны"
+
+# Просмотр логов
+logs:
+	$(DOCKER_COMPOSE) logs -f airflow-webserver
+
+# Логи шедулера
+logs-scheduler:
+	$(DOCKER_COMPOSE) logs -f airflow-scheduler
+
+# Обновление requirements.txt
+deps:
+	uv export --format requirements.txt --no-hashes --no-dev | findstr /v "^-e" > requirements.txt
+	@echo "✅ requirements.txt обновлен"
