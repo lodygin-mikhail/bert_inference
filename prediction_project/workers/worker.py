@@ -1,7 +1,7 @@
-from logger import get_logger
-from client.client import FileClient
-from processing.processor import Processor
-from predict.predict import BertModel
+from prediction_project.logger import get_logger
+from prediction_project.client.client import FileClient
+from prediction_project.processing.processor import Processor
+from prediction_project.model.model import BertModel
 
 logger = get_logger(__name__)
 
@@ -14,11 +14,23 @@ class Worker:
         """
         Инициализирует экземпляры классов Client, Processor, BertModel.
         """
-        logger.info("Инициализация воркера: %s")
+        self.client = None
+        self.processor = None
+        self.model = None
+        logger.info("Создан объект класса Worker")
+
+    def initialize(self):
+        """
+        Метод иницализирует воркера.
+        :return:
+        """
+        logger.info("Инициализация воркера")
         try:
             self.client = FileClient()
             self.processor = Processor()
             self.model = BertModel()
+            self.model.load_model()
+            logger.debug("Воркер успешно инициализирован")
         except Exception as e:
             logger.error("Ошибка инициализации воркера: %s", e, exc_info=True)
             raise
@@ -32,11 +44,11 @@ class Worker:
         """
         logger.info("Начало работы воркера")
         try:
-            data = self.client.read_file(input_path)
+            data = self.client.read(input_path)
             processed_data = self.processor.preprocess_data(data)
-            model_prediction = self.model.predict(processed_data)
-            postprocessed_data = self.processor.postprocess_data(model_prediction)
-            self.client.write_file(postprocessed_data, output_path)
+            processed_data['scores'] = self.model.predict_batch(processed_data.review.tolist())
+            postprocessed_data = self.processor.postprocess_data(processed_data)
+            self.client.write(postprocessed_data, output_path)
             logger.info("Успешное выполнение воркера")
 
         except Exception as e:

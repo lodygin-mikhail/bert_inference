@@ -1,6 +1,6 @@
 import pandas as pd
 
-from logger import get_logger
+from prediction_project.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -8,7 +8,7 @@ class FileClient:
     """
     Клиент для работы с файловой системой.
     """
-    def read_file(self, file_path: str) -> pd.DataFrame:
+    def read(self, file_path: str) -> pd.DataFrame:
         """
         Метод преобразует CSV файл в pandas.DataFrame
         :param file_path: Путь к исходному файлу CSV с данными
@@ -26,7 +26,7 @@ class FileClient:
             logger.error("Ошибка загрузки данных: %s", e, exc_info=True)
             raise
 
-    def write_file(self, data: pd.DataFrame, file_path: str):
+    def write(self, data: pd.DataFrame, file_path: str):
         """
         Метод записывает pandas.DataFrame в CSV файл по указанному пути
         :param data: Данные pandas.DataFrame
