@@ -1,15 +1,17 @@
-FROM apache/airflow:3.1.3
+FROM python:3.12-slim
 
-USER root
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    && apt-get clean
+WORKDIR /app
 
-USER airflow
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY prediction_project/ /opt/airflow/prediction_project/
+COPY prediction_project/ ./prediction_project/
+COPY main.py .
+COPY data/ ./data
+
+CMD ["python", "main.py"]
