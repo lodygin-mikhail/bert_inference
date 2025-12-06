@@ -20,7 +20,9 @@ class BertModel:
         self.model_name = model_name
         self.tokenizer = None
         self.model = None
-        self.device = None
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        if not torch.cuda.is_available():
+            logger.warning("Используется CPU вместо GPU")
         logger.info("Создан объект BertModel с моделью: %s", model_name)
 
     def load_model(self):
@@ -36,10 +38,6 @@ class BertModel:
         except Exception as e:
             logger.error("Ошибка загрузки модели: %s", e, exc_info=True)
             raise
-
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        if not torch.cuda.is_available():
-            logger.warning("Используется CPU вместо GPU")
         self.model.to(self.device)
         logger.debug("Модель загружена в память")
 
